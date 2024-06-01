@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8"
-ethers = "0.7.0" # oder die neueste Version
+ethers = "2.0.14"
 tokio = { version = "1.0", features = ["full"] }
+ethers-middleware = "2.0.14"
 

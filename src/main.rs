@@ -1,7 +1,16 @@
 use ethers::prelude::*;
+use ethers::providers::{Provider, Http};
+use ethers::signers::LocalWallet;
+use ethers_middleware::SignerMiddleware;
+use ethers::contract::abigen;
 use std::convert::TryFrom;
 use std::sync::Arc;
-use tokio::main;
+
+// Generiere die Contract-Bindings
+abigen!(
+    Moonmath,
+    "./abi/Moonmath.json",
+);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,24 +23,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialisiere die Wallet
     let wallet: LocalWallet = private_key.parse()?;
-    let wallet = wallet.with_chain_id(1802203764); // Chain-ID für Kakarot
+    let wallet = wallet.with_chain_id(1802203764_u64); // Chain-ID für Kakarot
 
     // Verbinde die Wallet mit dem Provider
-    let client = SignerMiddleware::new(provider, wallet);
-    let client = Arc::new(client);
+    let client = Arc::new(SignerMiddleware::new(provider, wallet));
 
-    // Contract-Adresse und ABI
+    // Contract-Adresse
     let contract_address: Address = "0x4c1fF993E16b493aEC456117d1B515567118188e".parse()?;
-    let abi = include_str!("../abi/Moonmath.json"); // Stelle sicher, dass du die ABI-Datei hast
 
     // Initialisiere den Contract
-    let contract = Contract::from_json(client, contract_address, abi.as_bytes())?;
+    let contract = Moonmath::new(contract_address, client);
 
     // Beispiel: Aufruf der performInteraction Funktion
-    let tx = contract.method::<_, H256>("performInteraction", ())?
-        .value(ethers::utils::parse_ether("0.00001").unwrap())
-        .send()
-        .await?;
+    let binding = contract
+        .perform_interaction()
+        .value(ethers::utils::parse_ether("0.00001").unwrap());
+    let tx = binding.send().await?;
 
     println!("Transaction hash: {:?}", tx);
     Ok(())
