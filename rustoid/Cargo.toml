@@ -3,4 +3,7 @@ name = "rustoid"
 version = "0.1.0"
 edition = "2021"
 
+# Fügen Sie Abhängigkeiten hinzu
 [dependencies]
+rand = "0.8"
+
